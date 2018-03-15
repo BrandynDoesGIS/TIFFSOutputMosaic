@@ -31,7 +31,7 @@ arcpy.env.workspace = "C:/Users/bbalch/Desktop/PineBarrensLiDARData/2011Workspac
 InputFolder = "trees_lower"
 
 #SET OUTPUT FOLDER (the folder in your workspace to which mosaics will be saved. ex: mosaic, stat_outputs, etc.) 
-OutputFolder = "mosaic_lower/allReturns" 
+OutputFolder = "mosaic_lower/test" 
 
 #SET YEAR (for output naming) 
 Year = 2011
@@ -56,57 +56,45 @@ os.chdir(arcpy.env.workspace)
 
 ## ---------- BEGIN MOSAIC SCRIPTS ---------- ##
 
-#Count, kurtosis, quadMean, skewness, std, mean
+#Define function 
 
-metriclist = ["count", "kurtosis", "quadMean", "skewness", "std", "mean"]
-while len(metriclist) > 0:
-    metric = metriclist[0]
-    arcpy.MosaicToNewRaster_management(glob.glob("./" + InputFolder + "/*_" + metric + "_" + returns + ".tif"),
+def MosaicStats(RasterInputs, output):
+    arcpy.MosaicToNewRaster_management(RasterInputs,
                             OutputFolder,
-                            str(Year) + "_mosaic_" + metric + "_" + returns + ".tif",
+                            output,
                             arcpy.SpatialReference("WGS 1984 UTM Zone 18N"),
                             "32_BIT_FLOAT",
                             "10",
                             "1",
                             "FIRST",
                             "FIRST")
-    arcpy.CalculateStatistics_management("./" + OutputFolder + "/" + str(Year) + "_mosaic_" + metric + "_" + returns + ".tif")
+    arcpy.CalculateStatistics_management("./" + OutputFolder + "/" + output)    
+
+#Count, kurtosis, quadMean, skewness, std, mean
+
+metriclist = ["count", "kurtosis", "quadMean", "skewness", "std", "mean"]
+while len(metriclist) > 0:
+    metric = metriclist[0]
+    MosaicStats(glob.glob("./" + InputFolder + "/*_" + metric + "_" + returns + ".tif"),
+                str(Year) + "_mosaic_" + metric + "_" + returns + ".tif")
     del metriclist[0]
 
 #Height bins
 
 BinLower = 0
 BinUpper = BinLower + BinIncrement
-
 while BinUpper <= NumberofBins:
-    arcpy.MosaicToNewRaster_management(glob.glob("./" + InputFolder + "/*_htBin" + str(BinLower) + "to" + str(BinUpper) + "_" + returns + ".tif"),
-                            OutputFolder,
-                            str(Year) + "_mosaic_htBin" + str(BinLower) + "to" + str(BinUpper) + "_" + returns + ".tif",
-                            arcpy.SpatialReference("WGS 1984 UTM Zone 18N"),
-                            "32_BIT_FLOAT",
-                            "10",
-                            "1",
-                            "FIRST",
-                            "FIRST")
-    arcpy.CalculateStatistics_management("./" + OutputFolder + "/" + str(Year) + "_mosaic_htBin" + str(BinLower) + "to" + str(BinUpper) + "_" + returns + ".tif")
+    MosaicStats(glob.glob("./" + InputFolder + "/*_htBin" + str(BinLower) + "to" + str(BinUpper) + "_" + returns + ".tif"),
+                str(Year) + "_mosaic_htBin" + str(BinLower) + "to" + str(BinUpper) + "_" + returns + ".tif")
     BinLower = BinLower + BinIncrement
     BinUpper = BinUpper + BinIncrement
 
 #Percentages
 
 pct = 0 + pctIncrement
-
 while pct <= 100:
-    arcpy.MosaicToNewRaster_management(glob.glob("./" + InputFolder + "/*_pct" + str(pct) + "_" + returns + ".tif"),
-                            OutputFolder,
-                            str(Year) + "_mosaic_pct" + str(pct) + "_" + returns + ".tif",
-                            arcpy.SpatialReference("WGS 1984 UTM Zone 18N"),
-                            "32_BIT_FLOAT",
-                            "10",
-                            "1",
-                            "FIRST",
-                            "FIRST")
-    arcpy.CalculateStatistics_management("./" + OutputFolder + "/" + str(Year) + "_mosaic_pct" + str(pct) + "_" + returns + ".tif")
+    MosaicStats(glob.glob("./" + InputFolder + "/*_pct" + str(pct) + "_" + returns + ".tif"),
+                            str(Year) + "_mosaic_pct" + str(pct) + "_" + returns + ".tif")            
     pct = pct + pctIncrement
 
 ## ---------- END MOSAIC SCRIPTS ---------- ##
