@@ -73,11 +73,9 @@ def MosaicStats(RasterInputs, output):
 #Count, kurtosis, quadMean, skewness, std, mean
 
 metriclist = ["count", "kurtosis", "quadMean", "skewness", "std", "mean"]
-while len(metriclist) > 0:
-    metric = metriclist[0]
+for metric in metriclist:
     MosaicStats(glob.glob("./" + InputFolder + "/*_" + metric + "_" + returns + ".tif"),
                 str(Year) + "_mosaic_" + metric + "_" + returns + ".tif")
-    del metriclist[0]
 
 #Height bins
 
